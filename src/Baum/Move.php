@@ -95,7 +95,7 @@ class Move {
   public function perform() {
     $this->guardAgainstImpossibleMove();
 
-    if ( $this->fireMoveEvent('moving') === false )
+    if ( $this->dispatchMoveEvent('moving') === false )
       return $this->node;
 
     if ( $this->hasChange() ) {
@@ -112,7 +112,7 @@ class Move {
       $this->node->reload();
     }
 
-    $this->fireMoveEvent('moved', false);
+    $this->dispatchMoveEvent('moved', false);
 
     return $this->node;
   }
@@ -339,20 +339,20 @@ class Move {
   }
 
   /**
-   * Fire the given move event for the model.
+   * Dispatch the given move event for the model.
    *
    * @param  string $event
    * @param  bool   $halt
    * @return mixed
    */
-  protected function fireMoveEvent($event, $halt = true) {
+  protected function dispatchMoveEvent($event, $halt = true) {
     if ( !isset(static::$dispatcher) ) return true;
 
-    // Basically the same as \Illuminate\Database\Eloquent\Model->fireModelEvent
+    // Basically the same as \Illuminate\Database\Eloquent\Model->dispatchModelEvent
     // but we relay the event into the node instance.
     $event = "eloquent.{$event}: ".get_class($this->node);
 
-    $method = $halt ? 'until' : 'fire';
+    $method = $halt ? 'until' : 'dispatch';
 
     return static::$dispatcher->$method($event, $this->node);
   }
